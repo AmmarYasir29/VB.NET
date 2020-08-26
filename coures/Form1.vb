@@ -1,20 +1,18 @@
 ﻿Imports System.Data.SqlClient
 Public Class Form1
-    Dim sqlCon As New SqlConnection("server=AMMAR\AMMAR; database=Coures; integrated security=true")
+    Dim sqlCon As New SqlConnection("server=AMMAR\AMMAR; database=Coures; integrated security=true") ' معلومات الاتصال بالداتابيس
     Public Property nameStudent As String
     Public Property theId As Integer
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         Label2.Text = "The Subject that student taken"
-
+        Dim x As Integer
+        x = 1
         sqlCon.Open()
-
-        'Dim strQuery As String = "SELECT * FROM subject where studentId = '" & nameStudent & "'"
-        'Dim strQuery As String = "Select * From dbo.student INNER Join dbo.studentSubject ON '" & nameStudent & "' = dbo.studentSubject.id_student INNER Join dbo.subject ON dbo.studentSubject.id_subject = dbo.subject.ID"
+        '---------------كويري لست للمواد ----------------------
+        'التكرار بالاستعلام ديصير بسبب الكويري مرتين تنفذ 
         Dim strQuery As String = "Select * From student Join studentSubject On '" & nameStudent & "' = studentSubject.id_student Join subject On studentSubject.id_subject = subject.ID"
-
-        Dim cmd As New SqlCommand(strQuery, sqlCon)
-
-            Dim reader As SqlDataReader = cmd.ExecuteReader
+        Dim cmd As New SqlCommand(strQuery, sqlCon) ' تنفيذ اوامر الكويري يرجع نتيجة الكويري 
+        Dim reader As SqlDataReader = cmd.ExecuteReader ' يقرء نتيجة كومند الذي ينفذ امر الكويري 
         ListView1.Columns.Add("ID")
         ListView1.Columns.Add("NameSubject")
         ListView1.Columns.Add("type")
@@ -26,18 +24,21 @@ Public Class Form1
         End While
         reader.Close()
 
-        Dim str2Query As String = "SELECT * FROM student where id = '" & nameStudent & "'" ' يستعلم عن رقم الصف المحدد فقط - يجيب معلومات الطالب واحد 
+        '---------------كويري لست لطالب ----------------------
+        'Dim str2Query As String = "SELECT * FROM student where id = '" & nameStudent & "'"    ' يستعلم عن رقم الصف المحدد فقط - استلاعم عن معلومات لطالب واحد 
+        'Dim str2Query As String = "Select * From student INNER Join degre On student.Id=degre.studentId where student.id = '" & nameStudent & "'"
+        Dim str2Query As String = "Select *, (SELECT AVG(degre1) FROM   (VALUES(degre1), (degre2),(degre3),(degre4)) V(degre1)) AS average
+                                    From student INNER Join degre On student.Id=degre.studentId where student.id = '" & nameStudent & "'"
         Dim cmd2 As New SqlCommand(str2Query, sqlCon)
-
         Dim reader2 As SqlDataReader = cmd2.ExecuteReader
-        ListView2.Columns.Add("ID")
-        ListView2.Columns.Add("NameOfStudent")
-        ListView1.Columns.Add("level")
         While reader2.Read
-            Dim item2 As New ListViewItem(reader2("ID").ToString())
-            item2.SubItems.Add(reader2("NameOfStudent"))
-            item2.SubItems.Add(reader2("level"))
-            ListView2.Items.Add(item2)
+
+            ListView2.Items.Add((x).ToString)
+            ListView2.Items(x - 1).SubItems.Add(reader2.Item("nameOfStudent").ToString)
+            ListView2.Items(x - 1).SubItems.Add(reader2.Item("class").ToString)
+            ListView2.Items(x - 1).SubItems.Add(reader2.Item("Branch").ToString)
+            ListView2.Items(x - 1).SubItems.Add(reader2.Item("average").ToString)
+            x = x + 1
         End While
         reader2.Close()
         sqlCon.Close()
